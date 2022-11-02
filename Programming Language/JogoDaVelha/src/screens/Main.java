@@ -1,18 +1,26 @@
 package screens;
 
+import java.util.Arrays;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import utils.Utility;
 import static utils.Utility.aiIcon;
 import static utils.Utility.userIcon;
 
 public class Main extends javax.swing.JFrame {
-    public static int field[][] = new int[3][3];
-    
+
+    public static int field[][] = {{-1, -1, -1}, {-1, -1, -1}, {-1, -1, -1}};
+
     public Main() {
         initComponents();
     }
 
+    public static void setField(int[][] field) {
+        Main.field = field;
+    }
+
     public JLabel wichButton(String rowCol) {
+        System.out.println("Pos [row | col] " + rowCol);
         switch (rowCol) {
             case "00" -> {
                 return block00;
@@ -41,38 +49,71 @@ public class Main extends javax.swing.JFrame {
             case "22" -> {
                 return block22;
             }
-            default -> throw new AssertionError();
+            default ->
+                throw new AssertionError();
         }
     }
-    
+
     public void makeMove(JLabel label, int[] pos) {
-        if(field[pos[0]][pos[1]] == 2 || field[pos[0]][pos[1]] == 1) return;
-        
+        // Are all of 'em filled?
+        if (field[0][0] != -1 && field[0][1] != -1
+                && field[0][2] != -1 && field[1][0] != -1
+                && field[1][1] != -1 && field[1][2] != -1
+                && field[2][0] != -1 && field[2][1] != -1
+                && field[2][2] != -1) {
+            return;
+        }
+
+        // Does it have a number that differs from -1
+        if (field[pos[0]][pos[1]] == 0 || field[pos[0]][pos[1]] == 1) {
+            return;
+        }
+
+        boolean isItAvailable = field[pos[0]][pos[1]] == -1 ? true : false;
+
+        // Update field selected by the user
+        field[pos[0]][pos[1]] = 0;
+
+        System.out.println("pos choosen " + pos[0] + pos[1] + "\n"
+                + "is it available? " + isItAvailable);
+
         // Update background
         Utility.changeBackground(label, userIcon);
-        int timeout = 0;
-        
+
+        int numTimeout = -1;
+
         // "A.I." position
         int posRow = Utility.getRandomField();
         int posCol = Utility.getRandomField();
-        
-        while (!(field[pos[posRow]][pos[posCol]] != 1 && field[pos[posRow]][pos[posCol]] != 2)) {
+
+        // Dont update if it has a number different from -1
+        while (field[posRow][posCol] != -1) {
+            System.out.println("update AI pos" + posRow + posCol);
             posRow = Utility.getRandomField();
             posCol = Utility.getRandomField();
-            if(timeout > 5) break;
-            
-            timeout++;
+
+            if (numTimeout > 100) {
+                break;
+            }
+            numTimeout++;
+
         }
-        
-        field[pos[0]][pos[1]] = 1;
-        field[pos[posRow]][pos[posCol]] = 2;
-        
-        System.out.println(field);
-        
-        JLabel AI = wichButton(""+posRow+""+posCol);
+
+        field[posRow][posCol] = 1;
+
+        JLabel AI = wichButton("" + posRow + "" + posCol);
         Utility.changeBackground(AI, aiIcon);
+
+        int isThereAWinner = Utility.checkWinner(field);
+        System.out.println("is there a winner? " + isThereAWinner);
+
+        if (isThereAWinner != -1) {
+            String whichPlayer = isThereAWinner == 0 ? "USER" : "A.I.";
+            JOptionPane.showMessageDialog(rootPane, "Wait... di- did someone win? HOLY FUCK IT ACTUALLY WORKS! CUZ THE (" + whichPlayer + ") SOMEHOW WON THE GAME");
+        }
+
     }
-    
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -409,15 +450,16 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_block22MousePressed
 
     private void ResetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ResetButtonActionPerformed
-        for(int i = 0; i < 3; i++) {
-            for(int j = 0; j < 3; j++) {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
                 String field = "" + j + i;
                 JLabel label = wichButton(field);
-                
+
                 Utility.changeBackground(label, "reset");
             }
         }
-        field = new int[3][3];
+        int newField[][] = {{-1, -1, -1}, {-1, -1, -1}, {-1, -1, -1}};
+        setField(newField);
     }//GEN-LAST:event_ResetButtonActionPerformed
 
     public static void main(String args[]) {
